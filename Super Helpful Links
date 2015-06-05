@@ -1,3 +1,7 @@
 How to set up my specific I2C LCD:
 http://tronixstuff.com/2014/09/24/tutorial-serial-pcf8574-backpacks-hd44780-compatible-lcd-modules-arduino/
-Really good!
+LCD module tutorial- this is the base code that I used.
+
+http://masteringarduino.blogspot.com/2013/12/lcdi2c.html
+Good description of how to address I2C
+
