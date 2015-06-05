@@ -1,0 +1,152 @@
+/*Code by Dave Thompson 2015
+  Circuit by David Montroni
+
+This program counts the number of tallies that a particular camera recieves.  
+On arduino Uno, uses +5v, Gnd, A0, A1.
+The circuit:
+  Sensor-
+    +5v in
+    sensor output to 10k ohm resistor to ground
+    sensor output to A0 on Arduino.  Reads analog signal.
+  Potentiometer
+    3 pin pot
+    pin 1 to +5v
+    pin 2 to A1 on arduino.  Reads value of pot
+    pin 3 10k ohm to ground
+The count is displayed on an LCD screen for data entry.
+*/
+
+
+//Header files ********
+#include <Console.h>
+#include <Wire.h>
+#include <LCD.h>
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C	lcd(0x27,2,1,0,4,5,6,7); // 0x27 is the I2C bus address for an unmodified backpack
+
+//*****
+//************
+//***************************
+//******************************************
+// Set debug to False to switch off debugging"
+bool DEBUG = true;
+//*******************************************
+//***************************
+//************
+//*****
+
+
+// Domain Variables
+String thisState = "LOW";
+String lastState = "LOW";
+int pulseCount = 0;
+int lastCount = pulseCount;
+
+// Port Constants
+//const String PHOTO_SENSOR = "A0";
+//const String THRESHOLD_POT = "A1";
+
+const int PHOTO_SENSOR = 0;
+const int THRESHOLD_POT = 1;
+
+
+void setup() {
+  
+  
+  // activate LCD module
+  lcd.begin (16,2); // for 16 x 2 LCD module
+  lcd.setBacklightPin(3,POSITIVE);
+  lcd.home();
+  lcd.print("Tally Counter");
+  lcd.setCursor(0, 1 );
+  lcd.print("Initializing");
+  delay(1500);
+  lcd.setCursor(0, 1 );
+  lcd.print("");
+  delay(50);
+  lcd.setCursor(0, 1 );
+  lcd.print(".................");
+  delay(1500);
+  lcd.home();
+  lcd.begin (16,2);
+  lcd.print("Count = ");
+
+
+
+  //setup serial display
+  Serial.begin(9600);
+  while (!Serial) {
+    ; // wait for serial to connect
+  }
+}
+
+
+int get_sample(int port) {
+  // simply returns a sample value from the analag port...
+  // wrapped this function as get_sample... just because.. meh.
+  return analogRead(port);
+}
+
+bool is_pulse(String thisState, String lastState)
+{
+  // returns True if a pulse condition is detected
+  if (thisState == "HIGH")
+  {
+    if (lastState == "LOW")
+    {
+      return true;
+    }
+  }
+}
+
+void display(String msg)
+{
+    Serial.println(msg);
+    lcd.home(); //completely reset cursor
+    lcd.print(msg);
+}
+
+
+void loop() {
+  //Serial.println(pulseCount); // print to serial example
+  
+  int light_value        = get_sample(PHOTO_SENSOR);
+  int threshold_value    = get_sample(THRESHOLD_POT);
+  
+  if (DEBUG)
+  {
+    String output = "DEBUG: ";
+    output += "PhSe: ";
+    output += light_value;
+    output += " | ThPo: ";
+    output += threshold_value;
+    output += " | COUNT: ";
+    output += pulseCount;
+    display(output);
+  }
+  
+  // advance history
+  lastState = thisState;
+  
+  if (light_value > threshold_value)
+  {
+    thisState = "HIGH";
+  }
+  else
+  {
+    thisState = "LOW";
+  }
+  
+  // advance counter if this is a pulse
+  if (is_pulse(thisState, lastState))
+  {
+    pulseCount++;
+    String output = "COUNT: ";
+    output += pulseCount;
+    display(output);
+  }
+  
+  delay(50);
+
+}
