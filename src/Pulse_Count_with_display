@@ -97,7 +97,7 @@ void setup() {
 }
 
 
-bool is_pulse(String thisState, String lastState)
+bool is_pulse(byte thisState, byte lastState)
 {
   // returns True if a pulse condition is detected
   if (thisState ==  HIGH )
