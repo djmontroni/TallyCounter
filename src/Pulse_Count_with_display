@@ -53,8 +53,8 @@ LiquidCrystal_I2C	lcd(0x27,2,1,0,4,5,6,7); // 0x27 is the I2C bus address for an
 
 
 // Domain Variables
-byte thisState = "LOW";
-byte lastState = "LOW";
+byte thisState = LOW ;
+byte lastState = LOW ;
 byte pulseCount = 0;
 byte lastCount = pulseCount;
 
@@ -100,9 +100,9 @@ void setup() {
 bool is_pulse(String thisState, String lastState)
 {
   // returns True if a pulse condition is detected
-  if (thisState == "HIGH")
+  if (thisState ==  HIGH )
   {
-    if (lastState == "LOW")
+    if (lastState ==  LOW )
     {
       return true;
     }
@@ -140,11 +140,11 @@ void loop() {
   
   if (light_value > threshold_value)
   {
-    thisState = "HIGH";
+    thisState =  HIGH ;
   }
   else
   {
-    thisState = "LOW";
+    thisState =  LOW ;
   }
   
   // advance counter if this is a pulse
