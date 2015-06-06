@@ -37,25 +37,32 @@ LiquidCrystal_I2C	lcd(0x27,2,1,0,4,5,6,7); // 0x27 is the I2C bus address for an
 //***************************
 //******************************************
 // Set debug to False to switch off debugging"
-bool DEBUG = true;
+// bool DEBUG = true;
 //*******************************************
 //***************************
 //************
 //*****
 
+//
+// MACROS - These definitions will save memory
+//
+#define LOW 0
+#define HIGH 1
+#define PHOTO_SENSOR 0
+#define THRESHOLD_POT 1
+
 
 // Domain Variables
-String thisState = "LOW";
-String lastState = "LOW";
-int pulseCount = 0;
-int lastCount = pulseCount;
+byte thisState = "LOW";
+byte lastState = "LOW";
+byte pulseCount = 0;
+byte lastCount = pulseCount;
 
 // Port Constants
 //const String PHOTO_SENSOR = "A0";
 //const String THRESHOLD_POT = "A1";
-
-const int PHOTO_SENSOR = 0;
-const int THRESHOLD_POT = 1;
+//const int PHOTO_SENSOR = 0;
+//const int THRESHOLD_POT = 1;
 
 
 void setup() {
@@ -90,12 +97,6 @@ void setup() {
 }
 
 
-int get_sample(int port) {
-  // simply returns a sample value from the analag port...
-  // wrapped this function as get_sample... just because.. meh.
-  return analogRead(port);
-}
-
 bool is_pulse(String thisState, String lastState)
 {
   // returns True if a pulse condition is detected
@@ -119,20 +120,20 @@ void display(String msg)
 void loop() {
   //Serial.println(pulseCount); // print to serial example
   
-  int light_value        = get_sample(PHOTO_SENSOR);
-  int threshold_value    = get_sample(THRESHOLD_POT);
+  int light_value        = analogRead(PHOTO_SENSOR);
+  int threshold_value    = analogRead(THRESHOLD_POT);
   
-  if (DEBUG)
-  {
-    String output = "DEBUG: ";
-    output += "PhSe: ";
-    output += light_value;
-    output += " | ThPo: ";
-    output += threshold_value;
-    output += " | COUNT: ";
-    output += pulseCount;
-    display(output);
-  }
+  //if (DEBUG)
+  //{
+  //  String output = "DEBUG: ";
+  //  output += "PhSe: ";
+  //  output += light_value;
+  //  output += " | ThPo: ";
+  //  output += threshold_value;
+  //  output += " | COUNT: ";
+  //  output += pulseCount;
+  //  display(output);
+  //}
   
   // advance history
   lastState = thisState;
