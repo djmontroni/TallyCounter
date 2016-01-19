@@ -1,0 +1,150 @@
+/*Code by Dave Thompson 2015
+  Circuit by David Montroni
+
+This program counts the number of tallies that a particular camera recieves.  
+On arduino Uno, uses +5v, Gnd, A0, A1.
+The circuit:
+  Sensor-
+    +5v in
+    sensor output to 10k ohm resistor to ground
+    sensor output to A0 on Arduino.  Reads analog signal.
+  Potentiometer
+    3 pin pot
+    pin 1 to +5v
+    pin 2 to A1 on arduino.  Reads value of pot
+    pin 3 10k ohm to ground
+The count is displayed on an Seven Segment display in Decimal forrm for data entry.
+    DAT to SDA (A4 on Uno/ Nano)
+    CLK to SCL (A5 on Uno/ Nano)
+    + to 5v
+    - to G
+
+If ThPo is greater than PhSe in the serial monitor during set up, the circuit will add to COUNT.
+
+Threshold must be set to above level of sensor at off levels for proper sensing.
+*/
+
+
+//Header files ********
+// Get the LCD I2C Library here: 
+// https://bitbucket.org/fmalpartida/new-liquidcrystal/downloads
+#include <Console.h>
+#include <Wire.h>
+//#include <LCD.h>
+//#include <LiquidCrystal_I2C.h>
+#include <Adafruit_LEDBackpack.h>
+#include <Adafruit_GFX.h>
+#include <gfxfont.h>
+
+Adafruit_7segment matrix = Adafruit_7segment();
+
+
+//*****
+//************
+//***************************
+//******************************************
+// Set debug to false to switch off debugging
+bool DEBUG = true;
+//*******************************************
+//***************************
+//************
+//*****
+
+
+// Domain Variables
+String thisState = "LOW";
+String lastState = "LOW";
+int pulseCount = 0;
+int lastCount = pulseCount;
+
+// Port Constants
+//const String PHOTO_SENSOR = "A0";
+//const String THRESHOLD_POT = "A1";
+
+const int PHOTO_SENSOR = 0;
+const int THRESHOLD_POT = 1;
+
+
+void setup() {
+  
+#ifndef __AVR_ATtiny85__
+  Serial.begin(9600);
+  Serial.println("Loading Serial Information...");
+  while (!Serial);    //connect serial
+#endif
+  matrix.begin(0x70);
+  
+}
+ 
+   
+int get_sample(int port) {
+  // simply returns a sample value from the analag port...
+  // wrapped this function as get_sample... just because.. meh.
+  return analogRead(port);
+}
+
+bool is_pulse(String thisState, String lastState)
+{
+  // returns True if a pulse condition is detected
+  if (thisState == "HIGH")
+  {
+    if (lastState == "LOW")
+    {
+      return true;
+    }
+  }
+}
+
+void display(String msg)
+{
+    Serial.println(msg);
+}
+
+
+void loop() {
+  //Serial.println(pulseCount); // print to serial example
+  
+  
+  int light_value        = get_sample(PHOTO_SENSOR);
+  int threshold_value    = get_sample(THRESHOLD_POT);
+
+  
+  if (DEBUG)
+  {
+    String output = "DEBUG: ";
+    output += "PhSe: ";
+    output += light_value;
+    output += " | ThPo: ";
+    output += threshold_value;
+    output += " | COUNT: ";
+    output += pulseCount;
+    display(output);
+  }
+ 
+  
+  // advance history
+  lastState = thisState;
+  
+  if (light_value > threshold_value)
+  {
+    thisState = "HIGH";
+  }
+  else
+  {
+    thisState = "LOW";
+  }
+  
+  // advance counter if this is a pulse
+  if (is_pulse(thisState, lastState))
+  {
+    pulseCount++;
+    String output = "";
+    output += pulseCount;
+    //display(output);
+  }
+  
+  matrix.print(pulseCount, DEC);
+  matrix.writeDisplay();
+  delay(10);
+
+}
